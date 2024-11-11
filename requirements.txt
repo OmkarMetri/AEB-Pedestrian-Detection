@@ -1,0 +1,7 @@
+pycocotools
+numpy
+requests
+urllib3
+tqdm
+black
+ultralytics
