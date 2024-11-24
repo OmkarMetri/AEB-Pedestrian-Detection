@@ -54,3 +54,25 @@
      ```
    - **Output**: Each image will return either `Pedestrian Detected` or `No Pedestrian Detected`.
 
+---
+
+#### 3. CARLA Simulation
+
+### Notes
+- **Pedestrian Detection**: When pedestrians are detected by the sensor or camera, their images are saved locally in the directory `images/sceneX/*`. For example, for Scene `0`, the images will be stored in `images/scene0/*`.
+
+- **Traffic Lights**: The ego vehicle disregards any traffic light detections and focuses solely on pedestrians.
+
+
+**Scene 0 - Braking on pedestrian detection**  
+
+   - **Running the Script**: ```python scene_basic.py```
+
+   - **Video**: [Scene Basic Video](videos/scene_basic.mp4)
+
+
+**Scene 4 - Braking during a right turn when the light is green, if a pedestrian is crossing**  
+
+   - **Running the Script**: ```python scene4.py```
+
+   - **Video**: [Scene 4 Video](videos/scene4.mp4)
