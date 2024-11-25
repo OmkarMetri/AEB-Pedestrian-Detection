@@ -71,8 +71,15 @@
    - **Video**: [Scene Basic Video](videos/scene_basic.mp4)
 
 
-**Scene 4 - Braking during a right turn when the light is green, if a pedestrian is crossing**  
+**Scene 4 - Braking during right turn when the light is green and pedestrian is crossing**  
 
    - **Running the Script**: ```python scene4.py```
 
    - **Video**: [Scene 4 Video](videos/scene4.mp4)
+
+
+**Scene 5 - Braking when pedestrian is having strange object, such as shopping cart or trolley**  
+
+   - **Running the Script**: ```python scene5.py```
+
+   - **Video**: [Scene 5 Video](videos/scene5.mp4)
