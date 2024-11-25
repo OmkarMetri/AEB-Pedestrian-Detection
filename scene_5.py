@@ -19,7 +19,7 @@ class Config:
         self.town = town
         self.ego_vehicle_filter = ego_vehicle_filter
         self.walker_speed = '1.0'
-        self.scene = 'images/scene0'
+        self.scene = 'images/scene5'
         self.model = YOLOv8PedestrianDetector()
 
 
@@ -45,23 +45,12 @@ def create_walker_blueprint(bp_library, actor_filter):
 
     return bp
 
-def attach_prop_to_pedestrian(world, pedestrian_actor, blueprint_library, prop_type='static.prop.shoppingcart'):
-    """
-    Attaches a prop to a pedestrian with precise positioning.
-
-    Args:
-    - world: The CARLA world instance.
-    - pedestrian_actor: The pedestrian actor to which the prop will be attached.
-    - blueprint_library: The CARLA blueprint library.
-    - prop_type: The type of prop to attach.
-    """
-    # Find the prop blueprint
-    prop_bp = blueprint_library.find(prop_type)
-
-    # Set the attachment transform with exact offsets
+def attach_prop_to_walker(world, bp_library, pedestrian_actor, prop_type='static.prop.shoppingcart'):
+    # prop blueprint and offset location
+    prop_bp = bp_library.find(prop_type)
     attachment_transform = carla.Transform(
-        location=carla.Location(x=0.7, y=0.0, z=-0.9),
-        rotation=carla.Rotation(pitch=0.0, yaw=0.0, roll=0.0)
+        location=carla.Location(x=0.3, y=0.0, z=0),
+        rotation=carla.Rotation(pitch=0.0, yaw=-90.0, roll=0.0)
     )
 
     # Spawn the prop and attach it to the pedestrian
@@ -71,7 +60,7 @@ def attach_prop_to_pedestrian(world, pedestrian_actor, blueprint_library, prop_t
         attach_to=pedestrian_actor,
         attachment_type=carla.AttachmentType.Rigid
     )
-    print(f"Spawned and attached prop: {prop_type}")
+    print(f"Spawned and attached {prop_type} with ID {prop.id}")
     return prop
 
 
@@ -157,14 +146,13 @@ def main():
         walker_actor = world.get_actor(walker_id)
         print(f'Walker spawned successfully with ID: {walker_id} and speed: {walker_bp.get_attribute("speed").as_float()}')
 
-         # Attach a prop to the walker
-        prop = attach_prop_to_pedestrian(
+        # Attach prop to the walker
+        prop = attach_prop_to_walker(
             world,
-            walker_actor,
             blueprint_library,
-            prop_type='static.prop.shoppingcart'
+            walker_actor,
+            prop_type='static.prop.shoppingtrolley'
         )
-
 
         # Walker Controller
         walker_controller_bp = blueprint_library.find('controller.ai.walker')
