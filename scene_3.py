@@ -44,7 +44,7 @@ def create_walker_blueprint(bp_library, actor_filter):
 
 
 def spawn_obstacle(world, blueprint_library, location):
-    obstacle_bp = blueprint_library.find('static.prop.trafficcone')  # Example obstacle
+    obstacle_bp = blueprint_library.find('static.prop.trafficcone01')  # Example obstacle
     obstacle_transform = carla.Transform(location)
     obstacle_actor = world.spawn_actor(obstacle_bp, obstacle_transform)
     return obstacle_actor
