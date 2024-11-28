@@ -21,8 +21,7 @@ class Config:
         self.walker_speed = '1.0'
         self.scene = 'images/scene1'
         self.model = YOLOv8PedestrianDetector()
-	  # self.weather = carla.WeatherParameters.CloudyNoon  # Default weather
-        # self.low_light_weather = carla.WeatherParameters.FoggySunset
+        self.fog_density = 15
 
 
 def create_vehicle_blueprint(bp_library, actor_filter, color=None):
@@ -48,16 +47,13 @@ def create_walker_blueprint(bp_library, actor_filter):
     return bp
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=10.0):
-    # check every third frame
-    if int(image.frame)%3 != 0:
+def camera_callback(conf, image, vehicle, walker, brake_distance=12.0):
+    # check every second frame
+    if int(image.frame) % 2 != 0:
         return
 
     array = np.reshape(image.raw_data, (image.height, image.width, 4))
     array_3channel = array[:, :, :3]
-
-	# Simulate low-light or foggy conditions by reducing brightness
-    adjusted_array = cv2.convertScaleAbs(array_3channel, alpha=0.4, beta=0)
 
     pedestrian_detected = conf.model.detect(array_3channel)
 
@@ -71,9 +67,7 @@ def camera_callback(conf, image, vehicle, walker, brake_distance=10.0):
         image.save_to_disk(f'{conf.scene}/{image.frame:06d}-{distance_to_pedestrian}.png')
     
     if pedestrian_detected and distance_to_pedestrian < brake_distance:
-        print(f"Foggy/Low Light: Pedestrian detected at {distance_to_pedestrian:.2f}m! Braking...")
-
-	# print(f"Pedestrian detected at distance of {distance_to_pedestrian}! Braking vehicle...")
+        print(f"Foggy/Low Light: Pedestrian detected at {distance_to_pedestrian:.2f} m! Braking...")
         custom_autopilot(vehicle, auto=False, brake=True)
     else:
         custom_autopilot(vehicle, auto=True, brake=False)
@@ -105,11 +99,10 @@ def main():
         # traffic manager
         traffic_manager = client.get_trafficmanager()
 
-	  # Set weather to low-light or foggy condition
-        world.set_weather(conf.low_light_weather)
-
-        # Set weather
-        # world.set_weather(carla.WeatherParameters.ClearNoon)
+	    # Set weather to low-light or foggy condition
+        weather = carla.WeatherParameters.CloudySunset
+        weather.fog_density = conf.fog_density
+        world.set_weather(weather)
 
         # Spawn the ego vehicle
         ego_vehicle_bp = create_vehicle_blueprint(blueprint_library, conf.ego_vehicle_filter, color="49,8,8")
@@ -125,7 +118,7 @@ def main():
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=ego_vehicle)
 
         # Walker
-        src_crosswalk_location = Location(x=-89.514999-5, y=31.997713, z=0.000000) + Location(z=1.0)
+        src_crosswalk_location = Location(x=-89.514999-8, y=31.997713, z=0.000000) + Location(z=1.0)
         dst_crosswalk_location = Location(x=-97.911476-22,  y=38.460583, z=0.000000) + Location(z=1.0)
 
         walker_bp = create_walker_blueprint(blueprint_library, 'walker.pedestrian.0026')
