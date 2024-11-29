@@ -68,18 +68,39 @@
 
    - **Running the Script**: ```python scene_basic.py```
 
-   - **Video**: [Scene Basic Video](videos/scene_basic.mp4)
+   - **Video**: [Scene Basic Video](videos/Scene0.mp4)
+
+
+**Scene 1 - Braking on pedestrian detection in low light and fog**  
+
+   - **Running the Script**: ```python scene_1.py```
+
+   - **Video**: [Scene 1 Video](videos/Scene1.mp4)
+
+
+**Scene 2 - Braking when pedestrian occluded behind another car**  
+
+   - **Running the Script**: ```python scene_2.py```
+
+   - **Video**: [Scene 2 Video](videos/Scene2.mp4)
+
+
+**Scene 3 - Braking when pedestrian is visible, becomes occluded and again visible**  
+
+   - **Running the Script**: ```python scene_3.py```
+
+   - **Video**: [Scene 3 Video](videos/Scene3.mp4)
 
 
 **Scene 4 - Braking during right turn when the light is green and pedestrian is crossing**  
 
-   - **Running the Script**: ```python scene4.py```
+   - **Running the Script**: ```python scene_4.py```
 
-   - **Video**: [Scene 4 Video](videos/scene4.mp4)
+   - **Video**: [Scene 4 Video](videos/Scene4.mp4)
 
 
 **Scene 5 - Braking when pedestrian is having strange object, such as shopping cart or trolley**  
 
-   - **Running the Script**: ```python scene5.py```
+   - **Running the Script**: ```python scene_5.py```
 
-   - **Video**: [Scene 5 Video](videos/scene5.mp4)
+   - **Video**: [Scene 5 Video](videos/Scene5.mp4)
