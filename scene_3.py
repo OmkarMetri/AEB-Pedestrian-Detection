@@ -108,7 +108,7 @@ def main():
 
         # Camera settings
         camera_bp = blueprint_library.find('sensor.camera.rgb')
-        camera_transform = carla.Transform(carla.Location(x=2.0, z=1.5), carla.Rotation(pitch=0, yaw=60))
+        camera_transform = carla.Transform(carla.Location(x=2.0, z=1.5), carla.Rotation(pitch=0, yaw=0))
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=ego_vehicle)
 
         # Spawn the pedestrian
