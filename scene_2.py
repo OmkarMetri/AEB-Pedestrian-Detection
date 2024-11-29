@@ -45,7 +45,7 @@ def create_walker_blueprint(bp_library, actor_filter):
     return bp
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
+def camera_callback(conf, image, vehicle, walker, brake_distance=30.0):
     # check every third frame
     if int(image.frame) % 2 != 0:
         return

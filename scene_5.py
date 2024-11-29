@@ -64,9 +64,9 @@ def attach_prop_to_walker(world, bp_library, pedestrian_actor, prop_type='static
     return prop
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=10.0):
+def camera_callback(conf, image, vehicle, walker, brake_distance=30.0):
     # check every third frame
-    if int(image.frame)%3 != 0:
+    if int(image.frame) % 3 != 0:
         return
 
     array = np.reshape(image.raw_data, (image.height, image.width, 4))

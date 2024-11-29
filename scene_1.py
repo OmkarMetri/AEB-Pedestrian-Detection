@@ -21,7 +21,7 @@ class Config:
         self.walker_speed = '1.0'
         self.scene = 'images/scene1'
         self.model = YOLOv8PedestrianDetector()
-        self.fog_density = 15
+        self.fog_density = 10
 
 
 def create_vehicle_blueprint(bp_library, actor_filter, color=None):
@@ -47,7 +47,7 @@ def create_walker_blueprint(bp_library, actor_filter):
     return bp
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=12.0):
+def camera_callback(conf, image, vehicle, walker, brake_distance=30.0):
     # check every second frame
     if int(image.frame) % 2 != 0:
         return
@@ -111,6 +111,10 @@ def main():
             Rotation(pitch=0.000000, yaw=-167.127060, roll=0.000000))
         ego_vehicle = world.spawn_actor(ego_vehicle_bp, ego_vehicle_spawn_point)
         print("Spawned ego vehicle!")
+
+        light_state = carla.VehicleLightState.LowBeam | carla.VehicleLightState.Position
+        ego_vehicle.set_light_state(carla.VehicleLightState(light_state))
+        print("Headlights turned on!")
 
         # Camera settings
         camera_bp = blueprint_library.find('sensor.camera.rgb')
