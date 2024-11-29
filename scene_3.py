@@ -158,7 +158,8 @@ def main():
         if 'walker_actor' in locals():
             walker_actor.destroy()
         if 'obstacle_actor' in locals():
-            obstacle_actor.destroy()
+            for obstacle_actor in obstacles:
+                obstacle_actor.destroy()
         print("Cleaned up and destroyed actors.")
 
 
