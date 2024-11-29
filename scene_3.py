@@ -17,7 +17,7 @@ class Config:
         self.town = town
         self.ego_vehicle_filter = ego_vehicle_filter
         self.walker_speed = '1.0'
-        self.scene = 'images/scene4'
+        self.scene = 'images/scene3'
         self.model = YOLOv8PedestrianDetector()
 
 
@@ -44,7 +44,7 @@ def create_walker_blueprint(bp_library, actor_filter):
 
 
 def spawn_obstacle(world, blueprint_library, location):
-    obstacle_bp = blueprint_library.find('static.prop.trafficcone01')  # Example obstacle
+    obstacle_bp = blueprint_library.find('static.prop.trafficcone01')
     obstacle_transform = carla.Transform(location)
     obstacle_actor = world.spawn_actor(obstacle_bp, obstacle_transform)
     return obstacle_actor
@@ -91,6 +91,9 @@ def main():
         blueprint_library = world.get_blueprint_library()
         print("Carla server connected!")
 
+        # traffic manager
+        traffic_manager = client.get_trafficmanager()
+
         # Set weather
         world.set_weather(carla.WeatherParameters.ClearNoon)
 
@@ -131,6 +134,7 @@ def main():
         # Set autopilot and camera listener
         camera.listen(lambda image: camera_callback(conf, image, ego_vehicle, walker_actor))
         ego_vehicle.set_autopilot(True)
+        traffic_manager.ignore_lights_percentage(ego_vehicle, 100)
 
         while True:
             world.tick()
