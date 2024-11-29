@@ -50,7 +50,13 @@ def spawn_obstacle(world, blueprint_library, location):
     return obstacle_actor
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
+def camera_callback(conf, image, vehicle, walker, brake_distance=15.0, occlusion_timeout=6.0):
+    static_vars = camera_callback.__dict__.setdefault('state', {
+        'pedestrian_last_seen_time': None,
+        'pedestrian_last_distance': float('inf'),
+    })
+    state = camera_callback.state
+
     if int(image.frame) % 3 != 0:
         return
 
@@ -62,15 +68,36 @@ def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
     pedestrian_location = walker.get_location()
     distance_to_pedestrian = vehicle_location.distance(pedestrian_location)
 
+    current_time = time.time()
+
     if pedestrian_detected:
+        # Update the last seen time and distance
+        state['pedestrian_last_seen_time'] = current_time
+        state['pedestrian_last_distance'] = distance_to_pedestrian
+
         print(f"Pedestrian visible at frame {image.frame}. Distance: {distance_to_pedestrian:.2f} m")
         image.save_to_disk(f'{conf.scene}/{image.frame:06d}-visible.png')
+
         if distance_to_pedestrian < brake_distance:
             print("Braking for pedestrian...")
             custom_autopilot(vehicle, auto=False, brake=True)
+        else:
+            custom_autopilot(vehicle, auto=True, brake=False)
+
     else:
         print(f"Pedestrian occluded at frame {image.frame}.")
         image.save_to_disk(f'{conf.scene}/{image.frame:06d}-occluded.png')
+
+        if state['pedestrian_last_seen_time'] is not None:
+            time_since_last_seen = current_time - state['pedestrian_last_seen_time']
+            
+            # If occlusion occurs within the timeout window and within brake distance
+            if time_since_last_seen < occlusion_timeout and state['pedestrian_last_distance'] < brake_distance:
+                print("Pedestrian occluded but nearby. Wait")
+                custom_autopilot(vehicle, auto=False, brake=True)
+            else:
+                print("No pedestrian nearby. Proceed")
+                custom_autopilot(vehicle, auto=True, brake=False)
 
 
 def custom_autopilot(vehicle, auto, brake):
