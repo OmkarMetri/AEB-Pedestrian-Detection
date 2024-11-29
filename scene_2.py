@@ -45,9 +45,9 @@ def create_walker_blueprint(bp_library, actor_filter):
     return bp
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=10.0):
+def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
     # check every third frame
-    if int(image.frame)%3 != 0:
+    if int(image.frame) % 2 != 0:
         return
 
     array = np.reshape(image.raw_data, (image.height, image.width, 4))
@@ -101,49 +101,50 @@ def main():
         # Ego vehicle
         ego_vehicle_bp = create_vehicle_blueprint(blueprint_library, conf.ego_vehicle_filter, color="49,8,8")
         ego_vehicle_spawn_point = Transform(
-            Location(x=-68.735168, y=129.303848, z=0.600000),
+            Location(x=-71.269684, y=132.314896, z=0.600000), 
             Rotation(pitch=0.000000, yaw=-167.127060, roll=0.000000))
         ego_vehicle = world.spawn_actor(ego_vehicle_bp, ego_vehicle_spawn_point)
         print("Ego vehicle spawned!")
 
         # Camera
         camera_bp = blueprint_library.find('sensor.camera.rgb')
-        camera_transform = carla.Transform(carla.Location(x=2.0, z=1.5))
+        camera_transform = carla.Transform(carla.Location(x=2.0, z=1.5), Rotation(yaw=25))
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=ego_vehicle)
 
         # My code changes
         # Vehicle waiting at the crosswalk
         blocking_vehicle_bp = create_vehicle_blueprint(blueprint_library, "vehicle.dodge.charger_2020")
         blocking_vehicle_spawn_point = Transform(
-            Location(x=-89.514999, y=35.997713, z=0.600000),
-            Rotation(pitch=0.0, yaw=180.0, roll=0.0))
+            Location(x=-103.823082, y=45.147366, z=0.5),
+            Rotation(pitch=0.000000, yaw=-90.0, roll=0.000000))
         blocking_vehicle = world.spawn_actor(blocking_vehicle_bp, blocking_vehicle_spawn_point)
-        blocking_vehicle.set_autopilot(False)
         print("Blocking vehicle spawned!")
 
-        # Pedestrian walking in front of the blocking vehicle
+        # Walker
+        src_crosswalk_location = Location(x=-89.514999-10, y=31.997713, z=0.000000) + Location(z=1.0)
+        dst_crosswalk_location = Location(x=-97.911476-22,  y=38.460583, z=0.000000) + Location(z=1.0)
+
         walker_bp = create_walker_blueprint(blueprint_library, 'walker.pedestrian.0026')
         walker_bp.set_attribute('speed', conf.walker_speed)
-        walker_spawn_location = Location(x=-89.514999 + 2, y=31.997713, z=0.000000) + Location(z=1.0)
-        walker = client.apply_batch_sync([SpawnActor(walker_bp, carla.Transform(walker_spawn_location))], True)
+        walker = client.apply_batch_sync([SpawnActor(walker_bp, carla.Transform(src_crosswalk_location))], True)
         if walker and walker[0].error:
-            print("Error spawning walker: ", walker[0].error)
+            print("error: ", walker[0].error)
             exit(1)
 
         walker_id = walker[0].actor_id
         walker_actor = world.get_actor(walker_id)
-        print(f"Walker spawned successfully with ID: {walker_id}")
+        print(f'Walker spawned successfully with ID: {walker_id} and speed: {walker_bp.get_attribute("speed").as_float()}')
 
+        # Walker Controller
         walker_controller_bp = blueprint_library.find('controller.ai.walker')
         walker_controller = world.spawn_actor(walker_controller_bp, carla.Transform(), attach_to=walker_actor)
         walker_controller.start()
-        walker_controller.go_to_location(Location(x=-97.204208, y=31.997713, z=0.000000))
+        walker_controller.go_to_location(dst_crosswalk_location)
 
-        # Camera listener
+        # camera capture, autopilot with lights ignore
         camera.listen(lambda image: camera_callback(conf, image, ego_vehicle, walker_actor))
-
-        # Ego vehicle starts moving
         ego_vehicle.set_autopilot(True)
+        traffic_manager.ignore_lights_percentage(ego_vehicle, 100)
 
         while True:
             world.tick()
