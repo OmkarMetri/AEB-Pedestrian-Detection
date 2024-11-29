@@ -112,8 +112,8 @@ def main():
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=ego_vehicle)
 
         # Spawn the pedestrian
-        src_crosswalk_location = carla.Location(x=-89.0, y=32.0, z=1.0)
-        dst_crosswalk_location = carla.Location(x=-85.0, y=15.0, z=1.0)
+        src_crosswalk_location = carla.Location(x=-89.514999-7, y=31.997713, z=1.0)
+        dst_crosswalk_location = carla.Location(x=-97.911476-22,  y=38.460583, z=1.0)
 
         walker_bp = create_walker_blueprint(blueprint_library, 'walker.pedestrian.0026')
         walker_bp.set_attribute('speed', conf.walker_speed)
@@ -128,8 +128,13 @@ def main():
         print(f"Spawned walker with ID {walker_id}")
 
         # Spawn obstacle
-        obstacle_location = carla.Location(x=-87.0, y=25.0, z=0.5)
-        obstacle_actor = spawn_obstacle(world, blueprint_library, obstacle_location)
+        obstacles = []
+        obstacle_locations = [carla.Location(x=-97.911476-3,  y=40.460583, z=0.0),
+                            carla.Location(x=-97.911476-3,  y=40.460583, z=0.5),
+                            carla.Location(x=-97.911476-3,  y=40.460583, z=1.0),
+                            carla.Location(x=-97.911476-3,  y=40.460583, z=1.5)]
+        for obstacle_location in obstacle_locations:
+            obstacles.append(spawn_obstacle(world, blueprint_library, obstacle_location))
 
         # Set autopilot and camera listener
         camera.listen(lambda image: camera_callback(conf, image, ego_vehicle, walker_actor))
