@@ -50,7 +50,7 @@ def spawn_obstacle(world, blueprint_library, location):
     return obstacle_actor
 
 
-def camera_callback(conf, image, vehicle, walker, brake_distance=15.0, occlusion_timeout=6.0):
+def camera_callback(conf, image, vehicle, walker, brake_distance=30.0, occlusion_timeout=5.0):
     static_vars = camera_callback.__dict__.setdefault('state', {
         'pedestrian_last_seen_time': None,
         'pedestrian_last_distance': float('inf'),
@@ -85,18 +85,15 @@ def camera_callback(conf, image, vehicle, walker, brake_distance=15.0, occlusion
             custom_autopilot(vehicle, auto=True, brake=False)
 
     else:
-        print(f"Pedestrian occluded at frame {image.frame}.")
-        image.save_to_disk(f'{conf.scene}/{image.frame:06d}-occluded.png')
-
         if state['pedestrian_last_seen_time'] is not None:
             time_since_last_seen = current_time - state['pedestrian_last_seen_time']
             
             # If occlusion occurs within the timeout window and within brake distance
             if time_since_last_seen < occlusion_timeout and state['pedestrian_last_distance'] < brake_distance:
-                print("Pedestrian occluded but nearby. Wait")
+                print(f"Pedestrian might be occluded at frame {image.frame}.")
+                image.save_to_disk(f'{conf.scene}/{image.frame:06d}-occluded.png')
                 custom_autopilot(vehicle, auto=False, brake=True)
             else:
-                print("No pedestrian nearby. Proceed")
                 custom_autopilot(vehicle, auto=True, brake=False)
 
 
@@ -135,7 +132,7 @@ def main():
 
         # Camera settings
         camera_bp = blueprint_library.find('sensor.camera.rgb')
-        camera_transform = carla.Transform(carla.Location(x=2.0, z=1.5), carla.Rotation(pitch=0, yaw=0))
+        camera_transform = carla.Transform(carla.Location(x=2.0, z=1.5), carla.Rotation(pitch=0, yaw=20))
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=ego_vehicle)
 
         # Spawn the pedestrian
@@ -156,10 +153,14 @@ def main():
 
         # Spawn obstacle
         obstacles = []
-        obstacle_locations = [carla.Location(x=-97.911476-3,  y=40.460583, z=0.0),
-                            carla.Location(x=-97.911476-3,  y=40.460583, z=0.5),
-                            carla.Location(x=-97.911476-3,  y=40.460583, z=1.0),
-                            carla.Location(x=-97.911476-3,  y=40.460583, z=1.5)]
+        obstacle_locations = [carla.Location(x=-97.5-3,  y=40.460583, z=0.0),
+                            carla.Location(x=-97.5-3,  y=40.460583, z=0.5),
+                            carla.Location(x=-97.5-3,  y=40.460583, z=1.0),
+                            carla.Location(x=-97.5-3,  y=40.460583, z=1.5),
+                            carla.Location(x=-97.5-4,  y=40.460583, z=0.0),
+                            carla.Location(x=-97.5-4,  y=40.460583, z=0.5),
+                            carla.Location(x=-97.5-4,  y=40.460583, z=1.0),
+                            carla.Location(x=-97.5-4,  y=40.460583, z=1.5)]
         for obstacle_location in obstacle_locations:
             obstacles.append(spawn_obstacle(world, blueprint_library, obstacle_location))
 
