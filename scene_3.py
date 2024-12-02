@@ -53,12 +53,6 @@ def spawn_obstacle(world, blueprint_library, location):
 
 
 def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
-    static_vars = camera_callback.__dict__.setdefault('state', {
-        'pedestrian_last_seen_time': None,
-        'pedestrian_last_distance': float('inf'),
-    })
-    state = camera_callback.state
-
     if int(image.frame) % 3 != 0:
         return
 
