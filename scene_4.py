@@ -22,6 +22,8 @@ class Config:
         self.walker_speed = '1.0'
         self.scene = 'images/scene4'
         self.model = YOLOv8PedestrianDetector()
+        self.last_pedestrian_detection_time = time.time()
+        self.return_to_autopilot = 5.0
 
 
 def create_vehicle_blueprint(bp_library, actor_filter, color=None):
@@ -49,7 +51,7 @@ def create_walker_blueprint(bp_library, actor_filter):
 
 def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
     # check every third frame
-    if int(image.frame)%3 != 0:
+    if int(image.frame) % 3 != 0:
         return
 
     array = np.reshape(image.raw_data, (image.height, image.width, 4))
@@ -63,20 +65,26 @@ def camera_callback(conf, image, vehicle, walker, brake_distance=15.0):
 
     # save to disk if pedestrian detected
     if pedestrian_detected:
-        image.save_to_disk(f'{conf.scene}/{image.frame:06d}-{round(distance_to_pedestrian, 8)}.png')
-    
-    if pedestrian_detected and distance_to_pedestrian < brake_distance:
-        print(f"Pedestrian detected at distance of {round(distance_to_pedestrian, 8)}! Braking vehicle...")
-        custom_autopilot(vehicle, auto=False, brake=True)
+        image.save_to_disk(f'{conf.scene}/{image.frame:06d}-{distance_to_pedestrian}.png')
+        conf.last_pedestrian_detection_time = time.time()
+        if distance_to_pedestrian < brake_distance:
+            print(f"Pedestrian detected at distance of {distance_to_pedestrian}m! FULL Braking...")
+            custom_autopilot(vehicle, auto=False, brake=True)
     else:
-        custom_autopilot(vehicle, auto=True, brake=False)
+        if time.time() - conf.last_pedestrian_detection_time > conf.return_to_autopilot:
+            print(f"Accelerate the vehicle...")
+            custom_autopilot(vehicle, auto=True, brake=False)
+        else:
+            print(f"Pedestrian out of sight! GRADUAL Brake Release...")
+            custom_autopilot(vehicle, auto=False, brake=True, brake_intensity=0.6, throttle=0.5)
 
 
-def custom_autopilot(vehicle, auto, brake):
+def custom_autopilot(vehicle, auto, brake, brake_intensity=1.0, throttle=0.0):
     vehicle.set_autopilot(auto)
     if brake:
         control = carla.VehicleControl()
-        control.brake = 1.0 
+        control.brake = brake_intensity
+        control.throttle = throttle 
         vehicle.apply_control(control)
 
 
@@ -142,9 +150,7 @@ def main():
         traffic_manager.ignore_lights_percentage(ego_vehicle, 100)
 
         while True:
-            for _ in range(200):
-                world.tick()
-                # time.sleep(0.1)
+            world.tick()
                 
     except KeyboardInterrupt:
         pass
